@@ -1,0 +1,32 @@
+doctype html
+html
+  head
+    if page_title
+      title #{title} - #{page_title}
+    else
+      title #{title}
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    script(src='/js/jquery-1.10.2.js', charset='utf8')
+    script(src='/js/jquery-ui-1.10.4.custom.js', charset='utf8')
+    script(src='/js/d3.js', charset='utf8')
+    link(rel='stylesheet', href='/css/trontastic/jquery-ui-1.10.4.custom.css')
+    block head
+  body
+    div.container
+    
+      //Menu sidebar
+      div.sidebar
+        ul.menu
+          li.title CryptoCoin Data
+          li
+            ul.submenu
+              li
+                a(href='/candlecharts') Candle Charts
+              li
+                a(href='/tickers') Tickers
+          
+      
+      //Main content
+      div.content
+        block content
+    

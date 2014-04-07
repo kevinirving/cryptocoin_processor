@@ -1,0 +1,20 @@
+{
+  "name": "TradeBot",
+  "version": "0.0.1",
+  "description": "Cryptocoin trading bot",
+  "author": "Kevin Irving <lifehax@thenatureofgod.us>",
+  "dependencies": {
+    "mongodb": "1.3.x",
+    "daemonize2": "0.4.x",
+    "mongoose": "3.8.x",
+    "fibers": "1.0.x",
+    "express": "3.x",
+    "jade": "1.3.x",
+    "stylus": "0.42.x"
+  },
+  "repository": {
+      "type": "git",
+      "url": "git://git.thenatureofgod.us:tradebot.git"
+  },
+  "engine": "node 0.10.x"
+}

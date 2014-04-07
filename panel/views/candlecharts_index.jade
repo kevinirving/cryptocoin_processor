@@ -1,0 +1,38 @@
+extends layout
+
+block head
+    link(rel='stylesheet', href='/stylesheets/candlecharts.css')
+    script(src='/js/candlechart.js')
+
+block content
+
+  div.floatLeft
+    h1 Viewing Graph For 
+      span.exchange_name #{default_exchange}:
+      span.market_name #{default_market}
+  div.floatLeft
+    select.chartSelect
+      each exchange in exchanges
+        optgroup(label=exchange.exchange.name)
+          each market in exchange.markets
+            if default_exchange == exchange.exchange.name && default_market == market.name
+              option(value=exchange.exchange.name+':'+market.name, selected='selected') #{market.name}
+            else
+              option(value=exchange.exchange.name+':'+market.name) #{market.name}
+  div.floatLeft
+    select.intervalSelect
+      each interval in [180,300,900,1800,3600,10800,21600,43200,86400]
+        if default_interval == interval
+          option(value=interval,selected='selected')= ''+(interval/60) + ' minutes'
+        else
+          option(value=interval)= ''+(interval/60) + ' minutes'
+  .clear
+  
+  div(id='chart')
+              
+  script(type='text/javascript').
+    $(function() {
+      $('.content').candlechart();
+    });
+              
+  

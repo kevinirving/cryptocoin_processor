@@ -1,0 +1,31 @@
+extends layout
+
+block head
+    link(rel='stylesheet', href='/stylesheets/tickers.css')
+    script(src='/js/ticker.js')
+
+block content
+
+  div.floatLeft
+    h1 Viewing Tickers For 
+      span.exchange_name #{default_exchange}:
+      span.market_name #{default_market}
+  div.floatLeft
+    select.chartSelect
+      each exchange in exchanges
+        optgroup(label=exchange.exchange.name)
+          each market in exchange.markets
+            if default_exchange == exchange.exchange.name && default_market == market.name
+              option(value=exchange.exchange.name+':'+market.name, selected='selected') #{market.name}
+            else
+              option(value=exchange.exchange.name+':'+market.name) #{market.name}
+  .clear
+  
+  div(id='tickers_container')
+              
+  script(type='text/javascript').
+    $(function() {
+      $('.content').ticker();
+    });
+              
+  
