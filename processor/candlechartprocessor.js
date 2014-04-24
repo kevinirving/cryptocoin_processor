@@ -11,14 +11,17 @@ CandleChartProcessor.prototype.process = function(finished_callback) {
     var self = this;
     var exchange = self.exchange;
     var market = self.market;
+    var interval = self.interval;
+    
+    console.log('Running candlechart mapreduce for '+exchange.name+':'+market.name+' interval:'+interval);
     
     Status.findOne({name: 'candles_'+interval+'_'+exchange.name+'_'+market.name}, function(err, status) {
         var endDate = new Date();
         var query = {date: {"$lte": endDate}};
-        var outParams = {replace: 'candles'};
+        var outParams = {replace: 'candles_'+interval};
         if(status) {
             query.date["$gt"] = status.lastProcessDate;
-            outParams = {reduce: 'candles'};
+            outParams = {reduce: 'candles_'+interval};
         }
         
         Trade.mapReduce({

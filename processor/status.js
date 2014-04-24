@@ -10,4 +10,3 @@ var StatusSchema = mongoose.Schema({
 StatusSchema.index({name: 1}, {unique: true});
 
 module.exports = mongooseConn.model('Status', StatusSchema);
-W
