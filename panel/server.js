@@ -11,7 +11,7 @@ mongooseConnectionManager.setup(function() {
 	app.use(express.methodOverride());
 	app.use(express.cookieParser());
 	app.use(express.cookieSession({
-		secret: 'lolthisisthepanelfortheentireuniverseroflcopter'
+		secret: 'nosecretzhere'
 	}));
 	
 	app.use(require('stylus').middleware({
