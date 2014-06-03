@@ -5,11 +5,9 @@ function MarketProcessor(exchange, market) {
 	    processClasses: {
 		    candlechart: require('./candlechartprocessor')
 	    },
-	    runQueue: [],
-	    mongoThreads: 3,
-	    currentlyRunning: 0,
 	  	processors: {},
-	  	isRunning: false,
+        runQueue: [],
+
         run: function() {
             var self = this;
             console.log('Starting data preprocessor for '+exchange.name+' '+market.name);
@@ -21,45 +19,28 @@ function MarketProcessor(exchange, market) {
             });
             self.process();
         },
-        finish: function(processor, interval) {
-	        var self = this;
-	        self.currentlyRunning--;
-	        
-	        if(self.runQueue.length == 0) {
-	        	self.isRunning = false;
-        	}
-        	
-            if(self.isRunning == false) {
-	            self.process();
-        	} else if(self.currentlyRunning < self.mongoThreads) {
-	        	self.processQueue();
-        	}
-	        	
+
+        processItem: function() {
+            var self = this;
+
+            var item = self.runQueue.shift();
+            item.process(function() {
+                if(self.runQueue.length > 0) {
+                    self.processItem();
+                } else {
+                    setInterval(self.process.bind(self), 10000);
+                }
+            });
         },
-        processQueue: function() {
-	        var self = this;
-	        if(self.runQueue.length > 0 && self.currentlyRunning < self.mongoThreads) {		        
-		        self.currentlyRunning++;
-		        var runner = self.runQueue.shift();
-	            runner.processor.process(function() {
-		            self.finish(runner.name, runner.interval);
-	            });
-	        	if(self.currentlyRunning < self.mongoThreads) {	
-		        	self.processQueue();
-	        	}
-        	}
-        },
+
         process: function() {
 	        var self = this;
-	        self.isRunning = true;
             self.intervals.forEach(function(interval) {
-	            self.runQueue.push({
-		            name: 'candlechart',
-		            runner: interval,
-		            processor: self.processors[interval].candlechart
-	            });
+                self.processorList.forEach(function(process) {
+                    self.runQueue.push(self.processors[interval][process]);
+                });
             });
-            self.processQueue();
+            self.processItem();
         }
     };
 }

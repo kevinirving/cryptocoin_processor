@@ -1,10 +1,8 @@
 var express = require('express'),
-	mongooseDB = require('../lib/mongoosedb'),
+	mongo = require('../lib/mongo'),
 	frontController = require('./front_controller');
-	
-var mongooseConnectionManager = new mongooseDB();
 
-mongooseConnectionManager.setup(function() {
+mongo.setup(function() {
 	var app = express();
 	
 	app.use(express.bodyParser());

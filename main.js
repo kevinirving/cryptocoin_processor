@@ -1,5 +1,5 @@
 var Fiber = require('fibers'),
-    mongooseDB = require('./lib/mongoosedb'),
+    mongo = require('./lib/mongo'),
     child_process = require('child_process');
     
     
@@ -18,16 +18,14 @@ function sleep(ms) {
 }
     
 Fiber(function() {
-    var mongooseConnectionManager = new mongooseDB();
     var processList = [];
     var running = true;
     var numProcesses = 0;
-    mongooseConnectionManager.setup('system', function() {
-    	var Exchange = require('./lib/exchanges/exchange');
-        Exchange.find({active: true}, function(err, exchanges) {
+    mongo.setup(function() {
+        mongo.db.collection('exchange').find({active: true}).toArray(function(err, exchanges) {
             if (err) return console.error(err);
             exchanges.forEach(function(exchange) {
-                exchange.getMarkets(function(err, markets) {
+                mongo.db.collection('market').find({exchange: exchange.name, active: true}).toArray(function(err, markets) {
                     if (err) return console.error(err);
                     markets.forEach(function(market) {
                         console.log('Spawning '+node+' child process for '+exchange.name+' '+market.name);

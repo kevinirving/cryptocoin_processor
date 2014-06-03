@@ -1,5 +1,4 @@
-var Trade = require('../lib/data/trade'),
-    Status = require('./status');
+var mongo = require('../lib/mongo');
 
 function CandleChartProcessor(exchange, market, interval) {
     this.exchange = exchange;
@@ -15,18 +14,17 @@ CandleChartProcessor.prototype.process = function(finished_callback) {
     
     console.log('Running candlechart mapreduce for '+exchange.name+':'+market.name+' interval:'+interval);
     
-    Status.findOne({name: 'candles_'+interval+'_'+exchange.name+'_'+market.name}, function(err, status) {
+    mongo.db.collection('status').findOne({name: 'candles_'+interval+'_'+exchange.name+'_'+market.name}, function(err, status) {
         var endDate = new Date();
         var query = {date: {"$lte": endDate}};
-        var outParams = {replace: 'candles_'+interval};
+        var outParams = {replace: 'candles_'+interval+'_'+exchange.name+'_'+market.name};
         if(status) {
             query.date["$gt"] = status.lastProcessDate;
-            outParams = {reduce: 'candles_'+interval};
+            outParams = {reduce: 'candles_'+interval+'_'+exchange.name+'_'+market.name};
         }
         
-        Trade.mapReduce({
-            query: query,
-            map: function() {
+        mongo.db.collection('trade').mapReduce(
+            function() {
                 var candleStart = this.date.getTime();
                 candleStart -= (candleStart % (interval * 1000));
                 emit(candleStart, {
@@ -36,14 +34,11 @@ CandleChartProcessor.prototype.process = function(finished_callback) {
                     low: this.price,
                     close: this.price,
                     open: this.price,
-                    avg_open: null,
-                    avg_close: this.price,
                     closeDate: this.date,
                     openDate: this.date,
                     tradeCount: 1
                 });
-            },
-            reduce: function(k, candles) {
+            }, function(k, candles) {
                 var outCandle = candles[0];
                 for(var i=1; i<candles.length; i++) {
                     var candle = candles[i];
@@ -61,22 +56,22 @@ CandleChartProcessor.prototype.process = function(finished_callback) {
                         outCandle.open = candle.open;
                         outCandle.openDate = candle.openDate;
                     }
-                    outCandle.avg_close = (outCandle.high + outCandle.low + outCandle.open + outCandle.close) / 4;
                     outCandle.tradeCount += candle.tradeCount;
                 }
                 
                 return outCandle;
-            },
-            scope: {
-                interval: interval
-            },
-            out: outParams
-        }, function(err, model, stats) {
+            }, {
+                query: query,
+                scope: {
+                    interval: interval
+                },
+                out: outParams
+            }, function(err, stats) {
             if(err) console.log(err);
             else {
-                console.log('Saved candle chart for interval '+interval+' (%d ms) '+endDate, stats.processtime);
-                Status.update({name: 'candles_'+interval+'_'+exchange.name+'_'+market.name},
-                    {lastProcessDate: endDate}, {upsert: true}, function(err, affected) {
+                console.log('Saved candle chart for interval '+interval+' '+endDate);
+                mongo.db.collection('status').update({name: 'candles_'+interval+'_'+exchange.name+'_'+market.name},
+                    {"$set": {lastProcessDate: endDate}}, {upsert: true}, function() {
                     finished_callback();
                 });
             }

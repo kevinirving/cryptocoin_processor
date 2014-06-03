@@ -8,7 +8,7 @@ function IndexController(app) {
 	});
 	
 	require('./candlecharts')(app);
-	require('./ticker')(app);
+	//require('./ticker')(app);
 }
 
 module.exports = IndexController;

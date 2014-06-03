@@ -50,7 +50,7 @@ $.widget('custom.candlechart', {
 			var fastWeight = 6;
 			var slowWeight = 21;
 			$.each(self.data, function(idx, el) {
-				var candleData = el.candle;
+				var candleData = el.value;
 				if(candleData.open === null || candleData.close === null) {
 					self.data[idx] = self.data[idx-1];
 					el = self.data[idx];
@@ -77,16 +77,14 @@ $.widget('custom.candlechart', {
 				  .attr('class', self.options.class)
 				  .attr('width', self.options.width)
 				  .attr('height', self.options.height);
-				  
-				var numCandles = self.data.length;
-				var startDates = self.data.map(function(d) {return new Date(d.start).getTime();})
+
+				var startDates = self.data.map(function(d) {return new Date(d.value.start).getTime();})
 				var candles = self.data;
 				var lastCandleDate = d3.max(startDates);
 				var startDate = d3.min(startDates);
-				console.log(candles);
 				self.y_scale = d3.scale.linear()
-					.domain([d3.min(candles.map(function(x) {return x.candle.low;})),
-								d3.max(candles.map(function(x) {return x.candle.high;}))])
+					.domain([d3.min(candles.map(function(x) {return x.value.low;})),
+								d3.max(candles.map(function(x) {return x.value.high;}))])
 					.range([height-margin, margin]);
 				self.x_scale = d3.scale.linear()
 					.domain([startDate, lastCandleDate])
@@ -110,7 +108,7 @@ $.widget('custom.candlechart', {
 		}
 		
 		var numCandles = self.data.length;
-		var startDates = self.data.map(function(d) {return new Date(d.start).getTime();})
+		var startDates = self.data.map(function(d) {return new Date(d.value.start).getTime();})
 		var candles = self.data;
 		var lastCandleDate = d3.max(startDates);
 		var startDate = d3.min(startDates);
@@ -196,41 +194,41 @@ $.widget('custom.candlechart', {
 			.data(candles)
 			.enter().append('svg:rect')
 			.attr('class', 'box')
-			.attr('x', function(d,i){return self.x_scale(new Date(d.start).getTime()) - (barWidth)/2;})
-			.attr('y', function(d){return self.y_scale(Math.max(d.candle.open, d.candle.close));})
-			.attr('height', function(d){return self.y_scale(Math.min(d.candle.open, d.candle.close)) - self.y_scale(Math.max(d.candle.open, d.candle.close));})
+			.attr('x', function(d,i){return self.x_scale(new Date(d.value.start).getTime()) - (barWidth)/2;})
+			.attr('y', function(d){return self.y_scale(Math.max(d.value.open, d.value.close));})
+			.attr('height', function(d){return self.y_scale(Math.min(d.value.open, d.value.close)) - self.y_scale(Math.max(d.value.open, d.value.close));})
 			.attr('width', function(d){return barWidth;})
-			.attr('fill', function(d){return d.candle.open > d.candle.close ? 'red' : 'green';});
+			.attr('fill', function(d){return d.value.open > d.value.close ? 'red' : 'green';});
 			
 		self.chart.selectAll('line.stem')
 			.data(candles)
 			.enter().append('svg:line')
 			.attr('class', 'stem')
-			.attr('x1', function(d, i) { return self.x_scale(new Date(d.start).getTime());})
-			.attr('x2', function(d, i) { return self.x_scale(new Date(d.start).getTime());})
-			.attr('y1', function(d) { return self.y_scale(d.candle.high); })
-			.attr('y2', function(d) { return self.y_scale(d.candle.low); })
-			.attr('stroke', function(d){return d.candle.open > d.candle.close ? 'red' : 'green';});
+			.attr('x1', function(d, i) { return self.x_scale(new Date(d.value.start).getTime());})
+			.attr('x2', function(d, i) { return self.x_scale(new Date(d.value.start).getTime());})
+			.attr('y1', function(d) { return self.y_scale(d.value.high); })
+			.attr('y2', function(d) { return self.y_scale(d.value.low); })
+			.attr('stroke', function(d){return d.value.open > d.value.close ? 'red' : 'green';});
 			
 		self.chart.selectAll('line.top_cap')
 			.data(candles)
 			.enter().append('svg:line')
 			.attr('class', 'top_cap')
-			.attr('x1', function(d, i) { return self.x_scale(new Date(d.start).getTime())-(barWidth/2);})
-			.attr('x2', function(d, i) { return self.x_scale(new Date(d.start).getTime())+(barWidth/2);})
-			.attr('y1', function(d) { return self.y_scale(d.candle.high); })
-			.attr('y2', function(d) { return self.y_scale(d.candle.high); })
-			.attr('stroke', function(d){return d.candle.open > d.candle.close ? 'red' : 'green';});
+			.attr('x1', function(d, i) { return self.x_scale(new Date(d.value.start).getTime())-(barWidth/2);})
+			.attr('x2', function(d, i) { return self.x_scale(new Date(d.value.start).getTime())+(barWidth/2);})
+			.attr('y1', function(d) { return self.y_scale(d.value.high); })
+			.attr('y2', function(d) { return self.y_scale(d.value.high); })
+			.attr('stroke', function(d){return d.value.open > d.value.close ? 'red' : 'green';});
 			
 		self.chart.selectAll('line.bottom_cap')
 			.data(candles)
 			.enter().append('svg:line')
 			.attr('class', 'top_cap')
-			.attr('x1', function(d, i) { return self.x_scale(new Date(d.start).getTime())-(barWidth/2);})
-			.attr('x2', function(d, i) { return self.x_scale(new Date(d.start).getTime())+(barWidth/2);})
-			.attr('y1', function(d) { return self.y_scale(d.candle.low); })
-			.attr('y2', function(d) { return self.y_scale(d.candle.low); })
-			.attr('stroke', function(d){return d.candle.open > d.candle.close ? 'red' : 'green';});
+			.attr('x1', function(d, i) { return self.x_scale(new Date(d.value.start).getTime())-(barWidth/2);})
+			.attr('x2', function(d, i) { return self.x_scale(new Date(d.value.start).getTime())+(barWidth/2);})
+			.attr('y1', function(d) { return self.y_scale(d.value.low); })
+			.attr('y2', function(d) { return self.y_scale(d.value.low); })
+			.attr('stroke', function(d){return d.value.open > d.value.close ? 'red' : 'green';});
 			
 		self.drawEMA();
 			
@@ -245,7 +243,7 @@ $.widget('custom.candlechart', {
 			.attr('class', 'average_fast')
 			.attr('x1', function(d, i) {
 				if(i > 0) {
-					var sDate = new Date(candles[i-1].start).getTime();
+					var sDate = new Date(candles[i-1].value.start).getTime();
 					return self.x_scale(sDate);	
 				} else {
 					return null;	
@@ -253,7 +251,7 @@ $.widget('custom.candlechart', {
 			})
 			.attr('x2', function(d, i) {
 				if(i > 0) {
-					var sDate = new Date(candles[i].start).getTime();
+					var sDate = new Date(candles[i].value.start).getTime();
 					return self.x_scale(sDate);	
 				} else {
 					return null;	
@@ -280,7 +278,7 @@ $.widget('custom.candlechart', {
 			.attr('class', 'average_slow')
 			.attr('x1', function(d, i) {
 				if(i > 0) {
-					var sDate = new Date(candles[i-1].start).getTime();
+					var sDate = new Date(candles[i-1].value.start).getTime();
 					return self.x_scale(sDate);	
 				} else {
 					return null;	
@@ -288,7 +286,7 @@ $.widget('custom.candlechart', {
 			})
 			.attr('x2', function(d, i) {
 				if(i > 0) {
-					var sDate = new Date(candles[i].start).getTime();
+					var sDate = new Date(candles[i].value.start).getTime();
 					return self.x_scale(sDate);	
 				} else {
 					return null;	

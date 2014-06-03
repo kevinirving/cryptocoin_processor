@@ -1,7 +1,4 @@
-var Exchange = require('../../lib/exchanges/exchange'),
-	Market = require('../../lib/exchanges/market'),
-	CandleChartModel = require('../../lib/data/candlechart'),
-	DEMAModel = require('../../lib/data/dema');
+var mongo = require('../../lib/mongo');
 
 function CandleChartsController(app) {
 	app.get('/candlecharts', function(req, res) {
@@ -15,14 +12,14 @@ function CandleChartsController(app) {
 		};
 		
 		
-		Exchange.find({active: true}, function(err, exchanges) {
+		mongo.db.collection('exchange').find({active: true}).toArray(function(err, exchanges) {
 			exchanges.forEach(function(exchange) {
 				tplData.exchanges[exchange.name] = {
 					exchange: exchange,
 					markets: {}
 				};
 			});
-			Market.find({active: true}, function(err, markets) {
+			mongo.db.collection('market').find({active: true}).toArray(function(err, markets) {
 				markets.forEach(function(market) {
 					tplData.exchanges[market.exchange].markets[market.name] = market;
 				});
@@ -34,21 +31,10 @@ function CandleChartsController(app) {
 	});
 	
 	app.get('/candlecharts/data', function(req, res) {
-		CandleChartModel.find({
-			exchange: req.query.exchange,
-			market: req.query.market,
-			interval: req.query.interval
-		}, function(err, candles) {
-			DEMAModel.findOne({
-				exchange: req.query.exchange,
-				market: req.query.market,
-				interval: req.query.interval
-			}, function(err, dema) {
-				res.send({
-					candles: candles,
-					averages: dema
-				});
-			});
+		mongo.db.collection('candles_'+req.query.interval+'_'+req.query.exchange+'_'+req.query.market).find().toArray(function(err, candles) {
+            res.send({
+                candles: candles
+            });
 		});
 	});
 }
