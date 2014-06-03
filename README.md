@@ -11,5 +11,8 @@ Runs gatherer application (moves raw data from cryptocoin markets to mongodb)
 
 Runs processor application (handles continuous processing of raw data into indicators: candles, macd, etc)
 ```
-./main.js gatherer
+./main.js processor
 ```
+
+Both applications require mongo to be prepopulated with data on which markets and associated credentials to connect with.
+You can view current indicators and candlecharts through the panel application (panel/server.js)
